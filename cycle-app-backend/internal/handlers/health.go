@@ -18,7 +18,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 
 	response := HealthResponse{
 		Status:  "ok",
-		Message: "CycleWise API is running",
+		Message: "ONMA_cycle🩸 API is running",
 	}
 
 	w.Header().Set("Content-Type", "application/json")

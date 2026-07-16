@@ -3,12 +3,13 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-
+	"log"
 	"cycle-app-backend/internal/models"
 )
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
+		log.Println("Request Method:", r.Method)
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
@@ -31,4 +32,3 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(response)
 }
-//

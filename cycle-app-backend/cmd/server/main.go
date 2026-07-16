@@ -16,7 +16,7 @@ func main() {
 		Handler: mux,
 	}
 
-	log.Println(" ONMA_CYCLE API started on http://localhost:8080")
+	log.Println(" ONMA_CYCLE🩸 API started on http://localhost:8080")
 
 	err := server.ListenAndServe()
 	if err != nil {
