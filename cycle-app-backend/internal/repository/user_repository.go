@@ -3,13 +3,13 @@ package repository
 import "cycle-app-backend/internal/models"
 
 type UserRepository struct {
-	users []models.User
+	users  []models.User
 	nextID int
 }
 
 func NewUserRepository() *UserRepository {
 	return &UserRepository{
-		users: []models.User{},
+		users:  []models.User{},
 		nextID: 1,
 	}
 }

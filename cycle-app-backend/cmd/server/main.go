@@ -22,8 +22,6 @@ func main() {
 	}
 }
 
-
-
 // package main
 
 // import (
