@@ -28,6 +28,13 @@ func RegisterRoutes(app *config.App) *http.ServeMux {
 
 	periodHandler := handlers.NewPeriodHandler(app.PeriodService)
 
+	// periodHandler := handlers.NewPeriodHandler(app.PeriodService)
+
+	cycleHandler := handlers.NewCycleHandler(
+		app.PeriodService,
+		app.CycleService,
+	)
+
 	mux.Handle(
 		"/periods",
 		middleware.AuthMiddleware(
@@ -44,6 +51,13 @@ func RegisterRoutes(app *config.App) *http.ServeMux {
 
 				http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 			}),
+		),
+	)
+
+	mux.Handle(
+		"/cycle",
+		middleware.AuthMiddleware(
+			http.HandlerFunc(cycleHandler.GetCycle),
 		),
 	)
 

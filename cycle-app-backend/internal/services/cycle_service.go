@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"sort"
 
 	"cycle-app-backend/internal/models"
 	"cycle-app-backend/internal/utils"
@@ -32,7 +33,7 @@ func (s *CycleService) CalculateCycleLength(
 		return 0, errors.New("current period must be after previous period")
 	}
 
-	return int(currentStart.Sub(previousStart).Hours() / 24), nil
+	return utils.DaysBetween(previousStart, currentStart), nil
 }
 
 func (s *CycleService) CalculatePeriodDuration(
@@ -57,6 +58,38 @@ func (s *CycleService) CalculatePeriodDuration(
 		return 0, errors.New("end date cannot be before start date")
 	}
 
-	// +1 because the first day counts as a period day.
-	return int(endDate.Sub(startDate).Hours()/24) + 1, nil
+	return utils.DaysBetween(startDate, endDate) + 1, nil
+}
+
+func (s *CycleService) CalculateAverageCycle(
+	periods []models.Period,
+) (float64, error) {
+
+	if len(periods) < 2 {
+		return 0, errors.New("at least two periods are required")
+	}
+
+	sort.Slice(periods, func(i, j int) bool {
+		return periods[i].StartDate < periods[j].StartDate
+	})
+
+	totalDays := 0
+	cycleCount := 0
+
+	for i := 1; i < len(periods); i++ {
+
+		cycleLength, err := s.CalculateCycleLength(
+			periods[i],
+			periods[i-1],
+		)
+
+		if err != nil {
+			return 0, err
+		}
+
+		totalDays += cycleLength
+		cycleCount++
+	}
+
+	return float64(totalDays) / float64(cycleCount), nil
 }
