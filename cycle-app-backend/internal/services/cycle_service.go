@@ -1,11 +1,10 @@
 package services
 
 import (
-	"errors"
-	"sort"
-
 	"cycle-app-backend/internal/models"
 	"cycle-app-backend/internal/utils"
+	"errors"
+	"sort"
 )
 
 type CycleService struct{}
@@ -92,4 +91,32 @@ func (s *CycleService) CalculateAverageCycle(
 	}
 
 	return float64(totalDays) / float64(cycleCount), nil
+}
+
+func (s *CycleService) PredictNextPeriod(periods []models.Period) (string, error) {
+	if len(periods) < 2 {
+		return "", errors.New("at least two periods are required")
+	}
+
+	averageCycle, err := s.CalculateAverageCycle(periods)
+	if err != nil {
+		return "", err
+	}
+
+	latestPeriod := periods[0]
+
+	for _, period := range periods {
+		if period.StartDate > latestPeriod.StartDate {
+			latestPeriod = period
+		}
+	}
+
+	lastPeriodStart, err := utils.ParseDate(latestPeriod.StartDate)
+	if err != nil {
+		return "", err
+	}
+
+	nextPeriod := lastPeriodStart.AddDate(0, 0, int(averageCycle))
+
+	return nextPeriod.Format("2006-01-02"), nil
 }
