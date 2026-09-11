@@ -83,3 +83,58 @@ func (h *CycleHandler) GetCycle(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(response)
 }
+
+func (h *CycleHandler) GetPrediction(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user, ok := r.Context().Value(middleware.UserContextKey()).(map[string]interface{})
+	if !ok {
+		http.Error(w, "User not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	userID, ok := user["user_id"].(int)
+	if !ok {
+		http.Error(w, "Invalid user information", http.StatusUnauthorized)
+		return
+	}
+
+	periods := h.PeriodService.GetUserPeriods(userID)
+
+	if len(periods) < 2 {
+		http.Error(w, "At least two periods are required", http.StatusBadRequest)
+		return
+	}
+
+	averageCycle, err := h.CycleService.CalculateAverageCycle(periods)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	lastPeriod := periods[0]
+
+	for _, period := range periods {
+		if period.StartDate > lastPeriod.StartDate {
+			lastPeriod = period
+		}
+	}
+
+	estimatedNextPeriod, err := h.CycleService.PredictNextPeriod(periods)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	response := models.CyclePrediction{
+		LastPeriodStart:     lastPeriod.StartDate,
+		AverageCycleLength:  averageCycle,
+		EstimatedNextPeriod: estimatedNextPeriod,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
