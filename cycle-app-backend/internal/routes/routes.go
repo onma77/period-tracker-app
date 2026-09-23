@@ -61,6 +61,9 @@ func RegisterRoutes(app *config.App) *http.ServeMux {
 		),
 	)
 
+	mux.Handle("/prediction", middleware.AuthMiddleware(http.HandlerFunc(cycleHandler.GetPrediction)))
+	mux.Handle("/ovulation", middleware.AuthMiddleware(http.HandlerFunc(cycleHandler.GetOvulationPrediction)))
+
 	return mux
 }
 

@@ -120,3 +120,42 @@ func (s *CycleService) PredictNextPeriod(periods []models.Period) (string, error
 
 	return nextPeriod.Format("2006-01-02"), nil
 }
+
+func (s *CycleService) PredictOvulation(periods []models.Period) (models.OvulationPrediction, error) {
+	if len(periods) < 2 {
+		return models.OvulationPrediction{}, errors.New("at least two periods are required")
+	}
+
+	averageCycle, err := s.CalculateAverageCycle(periods)
+	if err != nil {
+		return models.OvulationPrediction{}, err
+	}
+
+	latestPeriod := periods[0]
+
+	for _, period := range periods {
+		if period.StartDate > latestPeriod.StartDate {
+			latestPeriod = period
+		}
+	}
+
+	lastPeriodStart, err := utils.ParseDate(latestPeriod.StartDate)
+	if err != nil {
+		return models.OvulationPrediction{}, err
+	}
+
+	// Ovulation is estimated about 14 days before the next period.
+	ovulationDay := int(averageCycle) - 14
+	ovulationDate := lastPeriodStart.AddDate(0, 0, ovulationDay)
+
+	fertileWindowStart := ovulationDate.AddDate(0, 0, -5)
+	fertileWindowEnd := ovulationDate.AddDate(0, 0, 1)
+
+	return models.OvulationPrediction{
+		LastPeriodStart:    latestPeriod.StartDate,
+		AverageCycleLength: averageCycle,
+		EstimatedOvulation: ovulationDate.Format("2006-01-02"),
+		FertileWindowStart: fertileWindowStart.Format("2006-01-02"),
+		FertileWindowEnd:   fertileWindowEnd.Format("2006-01-02"),
+	}, nil
+}

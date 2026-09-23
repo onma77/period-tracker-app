@@ -138,3 +138,33 @@ func (h *CycleHandler) GetPrediction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+func (h *CycleHandler) GetOvulationPrediction(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user, ok := r.Context().Value(middleware.UserContextKey()).(map[string]interface{})
+	if !ok {
+		http.Error(w, "User not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	userID, ok := user["user_id"].(int)
+	if !ok {
+		http.Error(w, "Invalid user information", http.StatusUnauthorized)
+		return
+	}
+
+	periods := h.PeriodService.GetUserPeriods(userID)
+
+	prediction, err := h.CycleService.PredictOvulation(periods)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(prediction)
+}
