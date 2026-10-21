@@ -6,10 +6,11 @@ import (
 )
 
 type App struct {
-	AuthService    *services.AuthService
-	PeriodService  *services.PeriodService
-	CycleService   *services.CycleService
-	SymptomService *services.SymptomService
+	AuthService           *services.AuthService
+	PeriodService         *services.PeriodService
+	CycleService          *services.CycleService
+	SymptomService        *services.SymptomService
+	HealthGuidanceService *services.HealthGuidanceService
 }
 
 func NewApp() *App {
@@ -23,11 +24,13 @@ func NewApp() *App {
 
 	symptomRepo := repository.NewSymptomRepository()
 	symptomService := services.NewSymptomService(symptomRepo)
+	healthGuidanceService := services.NewHealthGuidanceService()
 	return &App{
-		AuthService:    authService,
-		PeriodService:  periodService,
-		CycleService:   cycleService,
-		SymptomService: symptomService,
+		AuthService:           authService,
+		PeriodService:         periodService,
+		CycleService:          cycleService,
+		SymptomService:        symptomService,
+		HealthGuidanceService: healthGuidanceService,
 	}
 }
 
