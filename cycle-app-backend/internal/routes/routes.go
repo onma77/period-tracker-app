@@ -65,6 +65,10 @@ func RegisterRoutes(app *config.App) *http.ServeMux {
 	mux.Handle("/ovulation", middleware.AuthMiddleware(http.HandlerFunc(cycleHandler.GetOvulationPrediction)))
 
 	symptomHandler := handlers.NewSymptomHandler(app.SymptomService)
+	healthGuidanceHandler := handlers.NewHealthGuidanceHandler(
+		app.HealthGuidanceService,
+	)
+	mux.HandleFunc("/health-guidance", healthGuidanceHandler.GetGuidance)
 
 	mux.Handle("/symptoms", middleware.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
